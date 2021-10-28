@@ -9,9 +9,7 @@ import org.openqa.selenium.support.ui.Select;
 import org.testng.Assert;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
@@ -27,6 +25,8 @@ public class Assignment3 {
 //        1.	Navigate  to carfax.com
         driver.get("https://www.carfax.com/");
 
+        driver.manage().deleteAllCookies();
+
 //        2.	Click on Find a Used Car
         driver.findElement(By.xpath("//a[@href='/cars-for-sale']")).click();
 
@@ -36,6 +36,8 @@ public class Assignment3 {
 //        4.	Choose “Tesla” for  Make.
         Select make = new Select(driver.findElement(By.name("make")));
         make.selectByValue("Tesla");
+
+        driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
 
 
 //        5.	Verify that the Select Model dropdown box contains 4 current
@@ -63,11 +65,11 @@ public class Assignment3 {
         Assert.assertTrue(driver.getPageSource().contains("Step 2 - Show me cars with"));
 //        9.	Check all 4 checkboxes.
         driver.findElement(By.xpath("//span[@aria-label = 'Toggle noAccidents']")).click();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         driver.findElement(By.xpath("//span[@aria-label = 'Toggle oneOwner']")).click();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         driver.findElement(By.xpath("//span[@aria-label = 'Toggle personalUse']")).click();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         driver.findElement(By.xpath("//span[@aria-label = 'Toggle serviceRecords']")).click();
 
         Thread.sleep(1000);
@@ -78,18 +80,14 @@ public class Assignment3 {
 
 //        12.	Verify the results count by getting the actual number of results displayed
 //        in the page by getting the count of WebElements that represent each result
-//        String results = driver.findElement(By.id("totalResultCount")).getText();
-//
-//        String actualCountOfResults
-//        String expectedCountOfResults
-//        Assert.assertEquals(actualCountOfResults, expectedCountOfResults);
+        List<WebElement> actualCount =driver.findElements(By.xpath("//div[@class='srp-list-container  srp-list-container--srp']//article"));
+        int elementsCount = actualCount.size();
 
-
-
+        Assert.assertEquals(elementsCount, Integer.parseInt(resultText));
 
 //        13.	Verify that each result header contains “Tesla Model S”.
 
-        List<WebElement> nameOfElements = driver.findElements(By.xpath("//h4[@class='srp-list-item-basic-info-model']"));
+        List<WebElement> nameOfElements = driver.findElements(By.xpath("//div[@class='srp-list-container  srp-list-container--srp']//article"));
 
         for (WebElement element : nameOfElements) {
             Assert.assertTrue(element.getText().contains("Tesla Model S"));
@@ -98,7 +96,14 @@ public class Assignment3 {
 //        14.	Get the price of each result and save them into a List in the order of their appearance.
 //        (You can exclude “Call for price” options)
         List<String> a = new ArrayList<>();
-        List<WebElement> price  = driver.findElements(By.xpath("//span[@class = 'srp-list-item-price']")); //
+        List<WebElement> price  = driver.findElements(By.xpath("//span[@class = 'srp-list-item-price']"));
+        for(int i = 0; i < price.size(); i++){
+            if(!price.get(i).getText().contains("Call for Price")){
+                a.add(price.get(i).getText());
+            }
+        }
+
+        Thread.sleep(500);
 
 //        15.	Choose “Price - High to Low” option from the Sort By menu
         Select highToLow = new Select(driver.findElement(By.xpath("//select[@aria-label= 'SelectSort']")));
@@ -107,9 +112,9 @@ public class Assignment3 {
         Thread.sleep(2000);
 //        16.	Verify that the results are displayed from high to low price.
 
-//        List<String> pricesHighToLow =driver.findElements(By.xpath("//div//span[@class='srp-list-item-price']"));
-//        Collections.sort(price, Collections.reverseOrder());
-//        Assert.assertEquals(pricesHighToLow, price);
+        List<WebElement> pricesHighToLow =driver.findElements(By.xpath("//div//span[@class='srp-list-item-price']"));
+        Collections.sort(price, Collections.reverseOrder());
+        Assert.assertEquals(pricesHighToLow, price);
 
 //        17.	Choose “Mileage - Low to High” option from Sort By menu
         Select actualMileage = new Select(driver.findElement(By.xpath("//select[@aria-label= 'SelectSort']")));
@@ -117,7 +122,8 @@ public class Assignment3 {
         Thread.sleep(1000);
 //        18.	Verify that the results are displayed from low to high mileage.
 
-
+        List<String> mileagesLowToHigh = My_Methods.getText(driver.findElements(By.xpath("//span[@class='srp-list-item-basic-info-value']")));
+        Assert.assertEquals(mileagesLowToHigh, actualMileage);
 
 
 //        19.	Choose “Year - New to Old” option from Sort By menu
@@ -127,6 +133,15 @@ public class Assignment3 {
         Thread.sleep(1000);
 
 //        20.	Verify that the results are displayed from new to old year.
+        List<WebElement> listOfYear = driver.findElements(By.xpath("//div[@class='srp-list-container  srp-list-container--srp']//article//h4"));
+        List<String>listYear=new ArrayList<>();
+        for(WebElement year:listOfYear){
+            listYear.add(year.getText());
+        }
+
+        for (String y:listYear) {
+            int z=listYear.indexOf(y);
+            listYear.set(z,y.substring(0,5));}
 //
 //        Push the code to a new GitHub repo and share the link in a text file and submit.
         driver.quit();
